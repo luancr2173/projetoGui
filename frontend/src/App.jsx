@@ -36,6 +36,7 @@ function App() {
   const [dadosDashboard, setDadosDashboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [busca, setBusca] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -66,12 +67,20 @@ function App() {
   };
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setBusca(searchTerm);
+      setPage(0);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
     carregarDados();
   }, [busca, page, rowsPerPage]);
 
   const handleBuscaChange = (event) => {
-    setBusca(event.target.value);
-    setPage(0);
+    setSearchTerm(event.target.value);
   };
 
   const handleChangePage = (_event, newPage) => {
@@ -171,7 +180,7 @@ function App() {
             <TextField
               fullWidth
               label="Buscar por cliente, advogado ou área jurídica"
-              value={busca}
+              value={searchTerm}
               onChange={handleBuscaChange}
               sx={{ mt: 3, mb: 2 }}
             />
