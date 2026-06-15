@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import api from './services/api';
 import Dashboard from './components/Dashboard';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   Alert,
   Box,
@@ -126,7 +126,8 @@ function App() {
     const doc = new jsPDF();
 
     doc.text('Relatório de Atendimentos Jurídicos', 14, 16);
-    doc.autoTable({
+
+    autoTable(doc, {
       startY: 24,
       head: [['Cliente', 'Data', 'Hora', 'Advogado', 'Área Jurídica', 'Status']],
       body: dadosExportacao.map((item) => [
