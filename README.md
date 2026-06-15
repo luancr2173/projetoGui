@@ -1,127 +1,208 @@
-# Painel de Atendimentos Jurídicos
+# Painel de Atendimentos Jurídicos - Full Stack
 
-Este projeto implementa um painel interno para consulta, análise e exportação de atendimentos jurídicos com uma API REST baseada em arquivo JSON mock e uma interface React com métricas, gráficos e tabela interativa.
+Aplicação full stack para consulta, análise, busca, paginação e exportação de atendimentos jurídicos, com API REST baseada em JSON mock e interface moderna em React.
 
-## 1. Visão Geral
+## Visão Geral
 
-- Back-end: Node.js + Express
-- Front-end: React + Vite + Material-UI (MUI)
-- Visualização: Recharts
-- Exportação: jsPDF + jsPDF AutoTable
-- Dados: arquivo mock JSON em backend/data/atendimentos.json
+Este projeto foi desenvolvido para simular um painel interno de atendimento jurídico, reunindo:
 
-## 2. Requisitos
+- Back-end em Node.js + Express
+- Front-end em React + Vite + Material-UI
+- Dashboard com KPIs, gráficos e tabela de agendamentos
+- Busca com debounce para reduzir requisições excessivas
+- Paginação e filtros aplicados no servidor
+- Exportação em CSV e PDF
 
-Antes de iniciar, verifique se o ambiente possui:
+---
+
+## Requisitos
+
+Antes de iniciar, confirme que o ambiente possui:
 
 - Node.js 18+
 - npm 9+
 - Git
 
-## 3. Como executar o Back-end
+---
+
+## Back-end
+
+### Instalação
 
 1. Entre na pasta do back-end:
+
    ```bash
    cd backend
    ```
 
 2. Instale as dependências:
+
    ```bash
    npm install
    ```
 
-3. Inicie o servidor em modo desenvolvimento:
-   ```bash
-   npm run dev
-   ```
+### Execução
 
-4. O servidor ficará disponível em:
-   ```text
-   http://localhost:3000/api/atendimentos
-   ```
+1. Inicie o servidor:
 
-5. Para iniciar em modo produção:
    ```bash
    npm start
    ```
 
-## 4. Como executar o Front-end
+2. O endpoint principal ficará disponível em:
+
+   ```text
+   http://localhost:3000/api/atendimentos
+   ```
+
+3. Para desenvolvimento com reinicialização automática:
+
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## Front-end
+
+### Instalação
 
 1. Entre na pasta do front-end:
+
    ```bash
    cd frontend
    ```
 
 2. Instale as dependências:
+
    ```bash
    npm install
    ```
 
-3. Inicie a aplicação:
+### Execução
+
+1. Inicie o servidor de desenvolvimento do Vite:
+
    ```bash
    npm run dev
    ```
 
-4. Abra o endereço exibido pelo Vite, normalmente:
+2. Abra a URL exibida pelo terminal, normalmente:
+
    ```text
    http://localhost:5173
    ```
 
-5. Para gerar a build de produção:
+3. Para gerar a build de produção:
+
    ```bash
    npm run build
    ```
 
-## 5. Dependências utilizadas e justificativa técnica
+---
+
+## Dependências Utilizadas e Justificativa Técnica
 
 ### Back-end
-- express: framework principal para criação da API REST e rotas.
-- cors: permite que o front-end em outra porta/host consuma a API.
-- nodemon: facilita o desenvolvimento com reinicialização automática do servidor.
+
+- express
+  - Framework principal para criação da API REST e definição das rotas.
+
+- cors
+  - Permite que o front-end, rodando em outra porta, consuma a API com compatibilidade entre ambientes.
 
 ### Front-end
-- react e react-dom: base do painel interativo.
-- vite: ferramenta rápida de build e desenvolvimento.
-- @mui/material: biblioteca de componentes UI pronta, usada para tabela, botões, cards, inputs e layout responsivo.
-- axios: cliente HTTP para consumir a API REST de forma simples e confiável.
-- recharts: biblioteca de gráficos para KPIs, pizza e linha.
-- jspdf e jspdf-autotable: geração de relatórios PDF estruturados com tabela.
 
-## 6. Decisões técnicas tomadas
+- @mui/material
+  - Biblioteca de componentes UI utilizada para cards, tabela, botões, inputs e layout responsivo.
 
-1. Paginação no servidor
-   - A paginação é feita no back-end para evitar carregar a base inteira no navegador e manter a resposta leve.
-   - Isso também garante que os filtros e a busca sejam aplicados antes da paginação.
+- axios
+  - Cliente HTTP usado para consumir a API REST com simplicidade e confiabilidade.
 
-2. Arquivo JSON como fonte principal
-   - A aplicação utiliza o arquivo mock atendimentos.json como base de dados, conforme requisito do teste técnico.
-   - Isso evita dependência de banco de dados e facilita a execução local.
+- recharts
+  - Biblioteca responsável pelos gráficos de distribuição por status e evolução mensal.
 
-3. UI modular e responsiva
-   - O dashboard foi separado em um componente específico para manter a lógica de métricas e gráficos organizada.
-   - A tela principal concentra a tabela, busca e exportação para manter a navegação clara.
+- jspdf
+  - Geração do arquivo PDF para exportação do relatório.
 
-4. Tratamento de erros padronizado
-   - O back-end agora retorna respostas JSON consistentes com status HTTP apropriados para falhas e rotas inexistentes.
+- jspdf-autotable
+  - Criação de tabelas estruturadas no PDF exportado.
 
-## 7. Funcionalidades principais
+---
 
-- Busca textual em tempo real por cliente, advogado e área jurídica.
-- Dashboard com métricas de total, concluídos, cancelados e receita estimada.
-- Gráficos de status e evolução mensal.
-- Tabela de atendimentos com paginação.
-- Exportação em CSV e PDF.
+## Decisões Técnicas Tomadas
 
-## 8. Limitações conhecidas
+### 1. Paginação e filtros no servidor
 
-- Os dados são baseados em um arquivo JSON estático, portanto não há persistência real em banco de dados.
-- A geração de receita é estimada com base nos dados do mock e pode ser ajustada para regras reais de negócio.
-- O cálculo mensal usa a data de agendamento convertida a partir de timestamps em milissegundos.
+A paginação e a filtragem de atendimentos foram implementadas no back-end em vez de carregar todos os registros na memória do navegador.
 
-## 9. Melhorias futuras
+Essa decisão foi adotada porque:
 
-- Adicionar autenticação e autorização para uso interno.
-- Implementar filtros avançados por status, advogado e período.
-- Persistir alterações de status e observações no arquivo mock ou em uma API real.
-- Melhorar o layout para dashboards com mais métricas e comparativos.
-- Adicionar testes automatizados de API e interface.
+- reduz o volume de dados trafegado para o front-end;
+- melhora a performance e o tempo de resposta;
+- garante consistência entre os dados da tabela, dos gráficos e dos filtros aplicados;
+- mantém o projeto mais preparado para crescer com mais registros.
+
+### 2. Debounce de 500ms na busca
+
+A busca textual foi implementada com debounce de 500 ms para evitar que a aplicação dispare uma chamada à API a cada tecla digitada.
+
+Isso melhora a experiência do usuário porque:
+
+- reduz requisições desnecessárias;
+- evita travamentos e lentidão na interface;
+- torna a busca mais fluida e profissional.
+
+### 3. Dados estáticos com arquivo JSON mock
+
+Os atendimentos são lidos do arquivo JSON mock localizado em `backend/data/atendimentos.json`, conforme requisito do teste técnico.
+
+Essa abordagem foi escolhida para:
+
+- facilitar a execução local;
+- manter o projeto independente de banco de dados;
+- permitir demonstração rápida da aplicação.
+
+---
+
+## Limitações Conhecidas
+
+- Os dados são estáticos e vêm de um arquivo JSON mock.
+- Não existe persistência real em banco de dados no momento.
+- A aplicação ainda não possui autenticação e autorização para uso em ambiente corporativo.
+
+---
+
+## Melhorias Futuras
+
+Algumas melhorias planejadas para evolução do projeto:
+
+- Integrar um banco de dados real, como PostgreSQL ou MySQL.
+- Adicionar autenticação com JWT para controle de acesso.
+- Implementar filtros avançados por período, status e advogado.
+- Criar testes automatizados para front-end e back-end.
+- Expandir os relatórios e métricas para análise mais aprofundada dos atendimentos.
+
+---
+
+## Estrutura do Projeto
+
+```text
+backend/
+  controllers/
+  data/
+  routes/
+  index.js
+
+frontend/
+  src/
+    components/
+    services/
+  index.html
+```
+
+---
+
+## Observações Finais
+
+Este projeto foi organizado para demonstrar um painel interno funcional, com arquitetura simples, manutenção facilitada e boas práticas de desenvolvimento para um teste técnico de desenvolvedor full stack.
