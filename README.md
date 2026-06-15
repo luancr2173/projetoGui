@@ -205,4 +205,4 @@ frontend/
 
 ## Observações Finais
 
-Este projeto foi organizado para demonstrar um painel interno funcional, com arquitetura simples, manutenção facilitada e boas práticas de desenvolvimento para um teste técnico de desenvolvedor full stack.
+Este projeto foi organizado para demonstrar um painel interno funcional, com arquitetura simples, manutenção facilitada e boas práticas de desenvolvimento.
