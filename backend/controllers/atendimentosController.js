@@ -26,20 +26,11 @@ const normalizeText = (value = '') =>
 
 exports.getAtendimentos = (req, res, next) => {
   try {
-    const page = Number.parseInt(req.query.page, 10);
-    const limit = Number.parseInt(req.query.limit, 10);
+    const pageParam = Number.parseInt(req.query.page, 10);
+    const limitParam = Number.parseInt(req.query.limit, 10);
 
-    if (Number.isNaN(page) || page < 1) {
-      const error = new Error('O parâmetro page deve ser um número inteiro maior que zero.');
-      error.status = 400;
-      return next(error);
-    }
-
-    if (Number.isNaN(limit) || limit < 1) {
-      const error = new Error('O parâmetro limit deve ser um número inteiro maior que zero.');
-      error.status = 400;
-      return next(error);
-    }
+    const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+    const limit = Number.isFinite(limitParam) && limitParam > 0 ? limitParam : 10;
 
     const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
