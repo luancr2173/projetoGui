@@ -1,53 +1,80 @@
 const fs = require('fs');
 const path = require('path');
 
-// Carrega os dados na memória ao iniciar o servidor
 const dataPath = path.join(__dirname, '../data/atendimentos.json');
 let atendimentos = [];
 
 try {
-    const rawData = fs.readFileSync(dataPath, 'utf-8');
-    const parsedData = JSON.parse(rawData);
-    
-    atendimentos = parsedData.map(item => ({
-        ...item,
-        'Valor': item.Status === 'Realizado' || item.Status === 'Concluído' ? Math.floor(Math.random() * 500) + 100 : 0
-    }));
+  const rawData = fs.readFileSync(dataPath, 'utf-8');
+  const parsedData = JSON.parse(rawData);
+
+  atendimentos = parsedData.map((item) => ({
+    ...item,
+    Valor: item.Status === 'Realizado' || item.Status === 'Concluído'
+      ? Math.floor(Math.random() * 500) + 100
+      : 0,
+  }));
 } catch (error) {
-    console.error('Erro ao ler a base de dados:', error);
+  console.error('Erro ao ler a base de dados:', error);
 }
 
-exports.getAtendimentos = (req, res) => {
-    try {
-        const { page = 1, limit = 10, search = '' } = req.query;
-        
-        let resultados = atendimentos;
+const normalizeText = (value = '') =>
+  String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 
-        if (search) {
-            const termo = search.toLowerCase();
-            resultados = resultados.filter(item => {
-                const cliente = (item['Nome do assistido'] || '').toLowerCase();
-                const advogado = (item['Responsável pelo agendamento'] || '').toLowerCase();
-                const servico = (item['Serviço'] || '').toLowerCase();
-                
-                return cliente.includes(termo) || advogado.includes(termo) || servico.includes(termo);
-            });
-        }
+exports.getAtendimentos = (req, res, next) => {
+  try {
+    const page = Number.parseInt(req.query.page, 10);
+    const limit = Number.parseInt(req.query.limit, 10);
 
-        const startIndex = (page - 1) * limit;
-        const endIndex = page * limit;
-        const paginatedResults = resultados.slice(startIndex, endIndex);
-
-        res.status(200).json({
-            total: resultados.length,
-            page: parseInt(page),
-            limit: parseInt(limit),
-            totalPages: Math.ceil(resultados.length / limit),
-            data: paginatedResults,
-            allFilteredDataForDashboard: resultados 
-        });
-
-    } catch (error) {
-        res.status(500).json({ error: 'Erro interno no servidor ao buscar atendimentos.' });
+    if (Number.isNaN(page) || page < 1) {
+      const error = new Error('O parâmetro page deve ser um número inteiro maior que zero.');
+      error.status = 400;
+      return next(error);
     }
+
+    if (Number.isNaN(limit) || limit < 1) {
+      const error = new Error('O parâmetro limit deve ser um número inteiro maior que zero.');
+      error.status = 400;
+      return next(error);
+    }
+
+    const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+
+    let resultados = atendimentos;
+
+    if (search) {
+      const termo = normalizeText(search);
+      resultados = resultados.filter((item) => {
+        const cliente = normalizeText(item['Nome do assistido']);
+        const advogado = normalizeText(item['Responsável pelo agendamento']);
+        const area = normalizeText(item['Organização'] || item['Serviço']);
+        const status = normalizeText(item.Status);
+
+        return cliente.includes(termo)
+          || advogado.includes(termo)
+          || area.includes(termo)
+          || status.includes(termo);
+      });
+    }
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedResults = resultados.slice(startIndex, endIndex);
+
+    res.status(200).json({
+      ok: true,
+      total: resultados.length,
+      page,
+      limit,
+      totalPages: Math.ceil(resultados.length / limit),
+      data: paginatedResults,
+      allFilteredDataForDashboard: resultados,
+    });
+  } catch (error) {
+    error.status = error.status || 500;
+    next(error);
+  }
 };

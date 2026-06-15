@@ -1,50 +1,69 @@
 import { Card, CardContent, Typography, Grid } from '@mui/material';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+const mesesDoAno = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+const agruparPorMes = (dados) => {
+  const acumulado = dados.reduce((acc, item) => {
+    const timestamp = Number(item['Data do agendamento']);
+    if (!Number.isFinite(timestamp)) return acc;
+
+    const data = new Date(timestamp);
+    const mesIndex = data.getMonth();
+    const ano = data.getFullYear();
+    const chave = `${ano}-${String(mesIndex + 1).padStart(2, '0')}`;
+
+    if (!acc[chave]) {
+      acc[chave] = {
+        mes: mesesDoAno[mesIndex],
+        ano,
+        quantidade: 0,
+      };
+    }
+
+    acc[chave].quantidade += 1;
+    return acc;
+  }, {});
+
+  return Object.values(acumulado)
+    .map((item) => ({
+      mes: `${item.mes} ${item.ano}`,
+      quantidade: item.quantidade,
+    }))
+    .sort((a, b) => {
+      const [mesA, anoA] = a.mes.split(' ');
+      const [mesB, anoB] = b.mes.split(' ');
+
+      return Number(anoA) - Number(anoB) || mesesDoAno.indexOf(mesA) - mesesDoAno.indexOf(mesB);
+    });
+};
+
 export default function Dashboard({ dados }) {
   if (!dados || dados.length === 0) return null;
 
-  // 1. Cálculo dos KPIs
   const total = dados.length;
-  const concluidos = dados.filter(item => item.Status === 'Realizado' || item.Status === 'Concluído').length;
-  const cancelados = dados.filter(item => item.Status === 'Cancelado' || item.Status === 'Falta').length;
+  const concluidos = dados.filter((item) => item.Status === 'Realizado' || item.Status === 'Concluído').length;
+  const cancelados = dados.filter((item) => item.Status === 'Cancelado' || item.Status === 'Falta').length;
   const receitaTotal = dados.reduce((acc, curr) => acc + (curr.Valor || 0), 0);
 
-  // 2. Preparação de Dados para o Gráfico de Pizza (Status)
   const statusCount = dados.reduce((acc, curr) => {
     const status = curr.Status || 'Sem Status';
     acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {});
 
-  const dadosPizza = Object.keys(statusCount).map(key => ({
+  const dadosPizza = Object.keys(statusCount).map((key) => ({
     name: key,
-    value: statusCount[key]
+    value: statusCount[key],
   }));
   const CORES = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-  // 3. Preparação de Dados para o Gráfico de Linha (Evolução Mensal)
-  const mesesCount = dados.reduce((acc, curr) => {
-    if (curr['Data do agendamento']) {
-      // Extrai o mês e ano (ex: 2026-06) dependendo do formato do seu excel. 
-      // Assumindo formato DD/MM/YYYY ou similar, pegamos uma substring
-      const dataStr = String(curr['Data do agendamento']); 
-      const mes = dataStr.substring(3, 10); // Ajuste fino pode ser necessário dependendo da string exata
-      acc[mes] = (acc[mes] || 0) + 1;
-    }
-    return acc;
-  }, {});
-
-  const dadosLinha = Object.keys(mesesCount).map(key => ({
-    mes: key,
-    quantidade: mesesCount[key]
-  })).sort((a, b) => a.mes.localeCompare(b.mes)); // Ordena por data
+  const dadosLinha = agruparPorMes(dados);
 
   return (
     <div style={{ marginBottom: '40px' }}>
       <Typography variant="h5" gutterBottom>Visão Geral</Typography>
-      
-      {/* Cards de KPI */}
+
       <Grid container spacing={3} style={{ marginBottom: '30px' }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card elevation={3}><CardContent>
@@ -74,7 +93,6 @@ export default function Dashboard({ dados }) {
         </Grid>
       </Grid>
 
-      {/* Gráficos */}
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
           <Card elevation={3} style={{ height: '350px', padding: '20px' }}>
@@ -91,7 +109,7 @@ export default function Dashboard({ dados }) {
             </ResponsiveContainer>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={6}>
           <Card elevation={3} style={{ height: '350px', padding: '20px' }}>
             <Typography variant="h6" gutterBottom>Evolução Mensal</Typography>
